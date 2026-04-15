@@ -12,8 +12,7 @@ Trước tiên, bạn cần đưa mã nguồn về tài khoản cá nhân của 
 ### 2. Triển khai lên Cloudflare Pages
 Sau khi đã Fork xong, hãy thực hiện các bước sau để đưa lên môi trường serverless:
 
-1. Truy cập vào trang quản trị Cloudflare: **Workers & Pages** > **Pages** > **Create application** > **Connect to Git**.
-   - *Link truy cập nhanh:* [dash.cloudflare.com/pages/new](https://dash.cloudflare.com/?to=/:account/pages/new/provider/github)
+1. Truy cập vào trang quản trị Cloudflare: **Workers & Pages** > **Pages** > **Create application** > **Connect to Git**. *[Link truy cập nhanh](https://dash.cloudflare.com/?to=/:account/pages/new/provider/github)*
 2. Chọn Repository bạn vừa mới Fork về.
 3. Tại phần **Build Settings**: Giữ nguyên mọi thông số **mặc định** (không cần điền hay chỉnh sửa bất kỳ dòng nào).
 4. Nhấn **Save and Deploy**.
