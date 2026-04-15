@@ -1,8 +1,30 @@
-# Cloudflare-Pages-Reverse-Proxy-Github
+# GitHub Proxy Mirror (gh.bibica.net)
 ---
-## 🛠️ GitHub Proxy Mirror (gh.bibica.net)
 
 Hệ thống Proxy giúp tăng tốc truy cập, gọi API và tải tài nguyên từ GitHub tại Việt Nam.
+
+## 🛠️ Hướng dẫn cài đặt
+
+Bạn có thể tự triển khai một bản proxy cá nhân tương tự trên hạ tầng Cloudflare Pages hoàn toàn miễn phí.
+
+### 1. Fork Repository
+Trước tiên, bạn cần đưa mã nguồn về tài khoản cá nhân của mình:
+* Nhấn nút **Fork** ở góc trên bên phải hoặc sử dụng link nhanh: [Fork dự án tại đây](https://github.com/bibicadotnet/Cloudflare-Pages-Reverse-Proxy-Github/fork).
+
+### 2. Triển khai lên Cloudflare Pages
+Sau khi đã Fork xong, hãy thực hiện các bước sau để đưa lên môi trường serverless:
+
+1. Truy cập vào trang quản trị Cloudflare: **Workers & Pages** > **Pages** > **Create application** > **Connect to Git**.
+   - *Link truy cập nhanh:* [dash.cloudflare.com/pages/new](https://dash.cloudflare.com/?to=/:account/pages/new/provider/github)
+2. Chọn Repository bạn vừa mới Fork về.
+3. Tại phần **Build Settings**: Giữ nguyên mọi thông số **mặc định** (không cần điền hay chỉnh sửa bất kỳ dòng nào).
+4. Nhấn **Save and Deploy**.
+
+Sau khi deploy thành công, Cloudflare sẽ cấp cho bạn một domain `.pages.dev`.
+
+Bạn có thể sử dụng ngay hoặc trỏ Custom Domain (như `gh.bibica.net`) trong phần cấu hình của Pages.
+
+---
 
 ### 📋 Bảng Mapping Domain
 
