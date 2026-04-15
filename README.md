@@ -1,5 +1,5 @@
 # GitHub Proxy Mirror (gh.bibica.net)
-Hệ thống Proxy giúp tăng tốc truy cập, gọi API và tải tài nguyên từ GitHub tại Việt Nam.
+Proxy ngược tốc độ cao cho GitHub — giải quyết tình trạng tải chậm tại Việt Nam. Chỉ cần thay domain, link hoạt động y hệt bản gốc.
 
 ## 🛠️ Hướng dẫn cài đặt
 
