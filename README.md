@@ -1,6 +1,4 @@
 # GitHub Proxy Mirror (gh.bibica.net)
----
-
 Hệ thống Proxy giúp tăng tốc truy cập, gọi API và tải tài nguyên từ GitHub tại Việt Nam.
 
 ## 🛠️ Hướng dẫn cài đặt
