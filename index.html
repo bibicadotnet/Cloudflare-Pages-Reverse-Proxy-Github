@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gh.bibica.net — GitHub Reverse Proxy</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --surface: #f6f8fa;
+            --border: #d0d7de;
+            --border2: #afb8c1;
+            --text: #1f2328;
+            --muted: #656d76;
+            --accent: #0969da;
+            --green: #1a7f37;
+            --orange: #9a6700;
+            --purple: #8250df;
+            --red: #cf222e;
+            --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 48px 0 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ddf4ff;
+            border: 1px solid rgba(9, 105, 218, 0.2);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 2em;
+            margin-bottom: 20px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #1f883d;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        h1 {
+            font-family: var(--sans);
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 600;
+            color: #1f2328;
+            line-height: 1.25;
+            margin-bottom: 14px;
+            letter-spacing: -0.01em;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 16px;
+
+        }
+
+        /* ── Why section ── */
+        .why {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .why-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(31, 35, 40, 0.04);
+        }
+
+        .why-icon {
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .why-title {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .why-desc {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* ── Domain table ── */
+        section {
+            padding: 36px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .domain-table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .domain-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: var(--bg);
+        }
+
+        .domain-table th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 14px;
+            padding: 12px 16px;
+            background: #f6f8fa;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .domain-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            color: var(--text);
+        }
+
+        .domain-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .domain-table tr:hover td {
+            background: #f6f8fa;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 2em;
+            font-family: var(--sans);
+            border: 1px solid transparent;
+        }
+
+        .tag-blue {
+            background: #ddf4ff;
+            color: #0969da;
+            border-color: rgba(9, 105, 218, 0.2);
+        }
+
+        .tag-green {
+            background: #dafbe1;
+            color: #1a7f37;
+            border-color: rgba(26, 127, 55, 0.2);
+        }
+
+        .tag-orange {
+            background: #fff8c5;
+            color: #9a6700;
+            border-color: rgba(212, 167, 44, 0.4);
+        }
+
+        .tag-purple {
+            background: #fbefff;
+            color: #8250df;
+            border-color: rgba(130, 80, 223, 0.2);
+        }
+
+        .tag-muted {
+            background: #f6f8fa;
+            color: #656d76;
+            border-color: rgba(31, 35, 40, 0.15);
+        }
+
+        .original {
+            color: var(--text);
+        }
+
+        .proxy {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* ── Code blocks ── */
+        .example-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+            background: #f6f8fa;
+        }
+
+        .code-lang {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .copy-btn {
+            font-family: var(--sans);
+            font-weight: 500;
+            font-size: 12px;
+            color: var(--text);
+            background: #f6f8fa;
+            border: 1px solid rgba(31, 35, 40, 0.15);
+            border-radius: 6px;
+            padding: 3px 12px;
+            cursor: pointer;
+            box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transition: 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+            transition-property: color, background-color, border-color;
+        }
+
+        .copy-btn:hover {
+            background-color: #f3f4f6;
+            border-color: rgba(31, 35, 40, 0.15);
+        }
+
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            line-height: 1.45;
+            font-size: 13px;
+            font-family: var(--mono);
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .c-comment {
+            color: #6e7781;
+        }
+
+        .c-key {
+            color: #cf222e;
+        }
+
+        .c-str {
+            color: #0a3069;
+        }
+
+        .c-orig {
+            color: #cf222e;
+            opacity: 0.8;
+        }
+
+        .c-new {
+            color: #1a7f37;
+        }
+
+        .c-arrow {
+            color: #9a6700;
+        }
+
+        /* ── Usage cards ── */
+        .usage-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .usage-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(31, 35, 40, 0.04);
+        }
+
+        .usage-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            background: #f6f8fa;
+        }
+
+        .usage-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0969da;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        .usage-title {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .usage-desc {
+            color: var(--muted);
+            font-size: 13px;
+            margin-left: auto;
+        }
+
+        .usage-body {
+            padding: 16px;
+        }
+
+        .url-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0;
+            flex-wrap: wrap;
+        }
+
+        .url-label {
+            font-size: 12px;
+            font-weight: 600;
+            width: 40px;
+            flex-shrink: 0;
+        }
+
+        .url-label.orig {
+            color: #cf222e;
+        }
+
+        .url-label.proxy {
+            color: #1a7f37;
+        }
+
+        .url-val {
+            font-size: 13px;
+            word-break: break-all;
+            font-family: var(--mono);
+            background: rgba(175, 184, 193, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .url-val.orig {
+            color: var(--muted);
+        }
+
+        .url-val.proxy {
+            color: var(--accent);
+            background: #ddf4ff;
+        }
+
+        /* ── Footer ── */
+        footer {
+            padding: 40px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-left {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer-left a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer-left a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-note {
+            font-size: 12px;
+            color: var(--text);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-note::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 16 16" fill="%231f2328" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>') no-repeat center;
+            background-size: contain;
+        }
+
+        /* ── Tampermonkey install ── */
+        .tm-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(31, 35, 40, 0.04);
+            margin-top: 16px;
+        }
+
+        .tm-icon {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+        }
+
+        .tm-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tm-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .tm-desc {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .tm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--sans);
+            font-weight: 600;
+            font-size: 13px;
+            color: #ffffff;
+            background: #1a7f37;
+            border: 1px solid rgba(27, 31, 36, 0.15);
+            border-radius: 6px;
+            padding: 8px 18px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tm-btn:hover {
+            background: #15692d;
+        }
+
+        .tm-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 600px) {
+            .tm-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+
+        /* ── Animations ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .fade-in:nth-child(2) {
+            animation-delay: .12s;
+        }
+
+        .fade-in:nth-child(3) {
+            animation-delay: .19s;
+        }
+
+        .fade-in:nth-child(4) {
+            animation-delay: .26s;
+        }
+
+        .fade-in:nth-child(5) {
+            animation-delay: .33s;
+        }
+
+        @media (max-width: 600px) {
+
+            .domain-table th:nth-child(3),
+            .domain-table td:nth-child(3) {
+                display: none;
+            }
+
+            .usage-desc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <!-- Header -->
+        <header>
+            <div class="badge">Reverse Proxy · GitHub</div>
+            <h1>gh.bibica.net<br><span>GitHub Proxy</span></h1>
+            <p class="subtitle">
+                Proxy ngược tốc độ cao cho GitHub — giải quyết tình trạng tải chậm tại Việt Nam.
+                Chỉ cần thay domain, link hoạt động y hệt bản gốc.
+            </p>
+        </header>
+
+        <!-- Why -->
+        <div class="why">
+            <div class="why-card fade-in">
+                <div class="why-icon">⚡</div>
+                <div>
+                    <div class="why-title">Tốc độ cao hơn</div>
+                    <div class="why-desc">Đi qua Cloudflare edge gần Việt Nam nhất</div>
+                </div>
+            </div>
+            <div class="why-card fade-in">
+                <div class="why-icon">🔄</div>
+                <div>
+                    <div class="why-title">Redirect tự động</div>
+                    <div class="why-desc">Xử lý redirect qua nhiều subdomain của GitHub</div>
+                </div>
+            </div>
+            <div class="why-card fade-in">
+                <div class="why-icon">🔒</div>
+                <div>
+                    <div class="why-title">Không thay đổi nội dung</div>
+                    <div class="why-desc">Proxy thuần túy, không can thiệp vào dữ liệu</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tampermonkey Userscript -->
+        <div class="tm-section" style="margin-top: 16px;">
+            <svg class="tm-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" rx="10" fill="#1a1a2e" />
+                <path d="M24 8L10 16v16l14 8 14-8V16L24 8z" fill="#e8363a" opacity="0.9" />
+                <path d="M24 12l-10 5.7v11.6L24 35l10-5.7V17.7L24 12z" fill="#1a1a2e" />
+                <path d="M20 22h2v10h-2zM26 19h2v13h-2z" fill="#e8363a" />
+            </svg>
+            <div class="tm-info">
+                <div class="tm-title">GitHub Proxy Smart Click</div>
+                <div class="tm-desc">Tự động chuyển link download/raw trên github.com qua proxy — không ảnh hưởng việc
+                    lướt web bình thường. Cần cài <a href="https://www.tampermonkey.net/" target="_blank"
+                        style="color:var(--accent)">Tampermonkey</a> trước.</div>
+            </div>
+            <a class="tm-btn" href="/GitHub%20Proxy%20Smart%20Click-2.1.user.js">
+                <svg viewBox="0 0 16 16">
+                    <path
+                        d="M2.75 14A1.75 1.75 0 011 12.25v-2.5a.75.75 0 011.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25v-2.5a.75.75 0 011.5 0v2.5A1.75 1.75 0 0113.25 14H2.75zM7.25 1.75a.75.75 0 011.5 0v7.44l2.72-2.72a.75.75 0 011.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 011.06-1.06l2.72 2.72V1.75z" />
+                </svg>
+                Cài đặt Userscript
+            </a>
+        </div>
+
+        <!-- Domain map -->
+        <section>
+            <div class="section-label">Bảng domain</div>
+            <div class="domain-table-wrap">
+                <table class="domain-table">
+                    <thead>
+                        <tr>
+                            <th>Domain gốc (GitHub)</th>
+                            <th>Thay bằng</th>
+                            <th>Dùng cho</th>
+                            <th>Loại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="original">github.com</td>
+                            <td class="proxy">gh.bibica.net</td>
+                            <td class="original">Browse, download release</td>
+                            <td><span class="tag tag-blue">Main</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">api.github.com</td>
+                            <td class="proxy">gh.bibica.net/_api</td>
+                            <td class="original">REST API, check version</td>
+                            <td><span class="tag tag-green">API</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">raw.githubusercontent.com</td>
+                            <td class="proxy">gh.bibica.net/_raw</td>
+                            <td class="original">Raw file trong repo</td>
+                            <td><span class="tag tag-orange">Raw</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">release-assets.githubusercontent.com</td>
+                            <td class="proxy">gh.bibica.net/_release-assets</td>
+                            <td class="original">File release CDN (tự redirect)</td>
+                            <td><span class="tag tag-purple">CDN</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">objects.githubusercontent.com</td>
+                            <td class="proxy">gh.bibica.net/_objects</td>
+                            <td class="original">Git object, blob</td>
+                            <td><span class="tag tag-muted">Git</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">codeload.github.com</td>
+                            <td class="proxy">gh.bibica.net/_codeload</td>
+                            <td class="original">Download zip/tar.gz repo</td>
+                            <td><span class="tag tag-muted">Zip</span></td>
+                        </tr>
+                        <tr>
+                            <td class="original">avatars.githubusercontent.com</td>
+                            <td class="proxy">gh.bibica.net/_avatars</td>
+                            <td class="original">Avatar người dùng</td>
+                            <td><span class="tag tag-muted">Media</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Usage examples -->
+        <section>
+            <div class="section-label">Ví dụ sử dụng</div>
+            <div class="usage-grid">
+
+                <!-- 1 -->
+                <div class="usage-item">
+                    <div class="usage-header">
+                        <div class="usage-num">1</div>
+                        <div class="usage-title">Download file release</div>
+                        <div class="usage-desc">github.com → gh.bibica.net</div>
+                    </div>
+                    <div class="usage-body">
+                        <div class="url-row">
+                            <span class="url-label orig">Gốc</span>
+                            <span
+                                class="url-val orig">https://github.com/jqlang/jq/releases/download/jq-1.7/jq-win64.exe</span>
+                        </div>
+                        <div class="url-row">
+                            <span class="url-label proxy">Proxy</span>
+                            <span
+                                class="url-val proxy">https://gh.bibica.net/jqlang/jq/releases/download/jq-1.7/jq-win64.exe</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2 -->
+                <div class="usage-item">
+                    <div class="usage-header">
+                        <div class="usage-num">2</div>
+                        <div class="usage-title">Gọi GitHub API</div>
+                        <div class="usage-desc">api.github.com → gh.bibica.net/_api</div>
+                    </div>
+                    <div class="usage-body">
+                        <div class="url-row">
+                            <span class="url-label orig">Gốc</span>
+                            <span class="url-val orig">https://api.github.com/repos/cli/cli/releases/latest</span>
+                        </div>
+                        <div class="url-row">
+                            <span class="url-label proxy">Proxy</span>
+                            <span class="url-val proxy">https://gh.bibica.net/_api/repos/cli/cli/releases/latest</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 -->
+                <div class="usage-item">
+                    <div class="usage-header">
+                        <div class="usage-num">3</div>
+                        <div class="usage-title">Raw file từ repo</div>
+                        <div class="usage-desc">raw.githubusercontent.com → gh.bibica.net/_raw</div>
+                    </div>
+                    <div class="usage-body">
+                        <div class="url-row">
+                            <span class="url-label orig">Gốc</span>
+                            <span
+                                class="url-val orig">https://raw.githubusercontent.com/gorhill/uBlock/master/README.md</span>
+                        </div>
+                        <div class="url-row">
+                            <span class="url-label proxy">Proxy</span>
+                            <span
+                                class="url-val proxy">https://gh.bibica.net/_raw/gorhill/uBlock/master/README.md</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Script usage -->
+        <section>
+            <div class="section-label">Dùng trong PowerShell / Script</div>
+
+            <div class="example-block">
+                <div class="code-header">
+                    <span class="code-lang">PowerShell</span>
+                    <button class="copy-btn" onclick="copyCode(this)">copy</button>
+                </div>
+                <pre><span class="c-comment"># Khai báo proxy ở đầu script</span>
+<span class="c-key">$GH_PROXY</span>  = <span class="c-str">"https://gh.bibica.net"</span>
+<span class="c-key">$API_PROXY</span> = <span class="c-str">"https://gh.bibica.net/_api"</span>
+<span class="c-key">$RAW_PROXY</span> = <span class="c-str">"https://gh.bibica.net/_raw"</span>
+
+<span class="c-comment"># Gọi API lấy version mới nhất</span>
+<span class="c-key">$release</span> = Invoke-RestMethod <span class="c-str">"$API_PROXY/repos/AdguardTeam/dnsproxy/releases/latest"</span>
+
+<span class="c-comment"># Rewrite browser_download_url về proxy</span>
+<span class="c-key">$url</span> = <span class="c-key">$asset</span>.browser_download_url <span class="c-key">-replace</span> <span class="c-str">'https://github\.com'</span>, <span class="c-key">$GH_PROXY</span>
+
+<span class="c-comment"># Download raw file</span>
+(New-Object System.Net.WebClient).DownloadFile(<span class="c-str">"$RAW_PROXY/user/repo/master/file.exe"</span>, <span class="c-key">$dest</span>)</pre>
+            </div>
+
+            <div class="example-block">
+                <div class="code-header">
+                    <span class="code-lang">curl / wget</span>
+                    <button class="copy-btn" onclick="copyCode(this)">copy</button>
+                </div>
+                <pre><span class="c-comment"># Thay github.com → gh.bibica.net</span>
+curl -L https://gh.bibica.net/user/repo/releases/download/v1.0/file.zip -o file.zip
+
+<span class="c-comment"># Raw file</span>
+wget https://gh.bibica.net/_raw/user/repo/main/install.sh -O install.sh
+
+<span class="c-comment"># API</span>
+curl https://gh.bibica.net/_api/repos/user/repo/releases/latest</pre>
+            </div>
+        </section>
+
+        <!-- Note -->
+        <section style="border-bottom:none; padding-bottom: 8px;">
+            <div class="section-label">Lưu ý</div>
+            <div style="display:grid; gap:8px;">
+                <div class="example-block"
+                    style="padding: 14px 16px; font-size:13px; color: var(--muted); line-height:1.6; margin: 0;">
+                    <span style="color:var(--orange)">⚠</span>
+                    &nbsp;Proxy này chỉ dành cho mục đích <strong style="color:var(--text)">tải file, gọi API</strong> —
+                    không hỗ
+                    trợ đăng nhập, OAuth hay các tính năng yêu cầu session của GitHub.
+                </div>
+                <div class="example-block"
+                    style="padding: 14px 16px; font-size:13px; color: var(--muted); line-height:1.6; margin: 0;">
+                    <span style="color:var(--green)">✓</span>
+                    &nbsp;Redirect giữa các subdomain (ví dụ: <code
+                        style="color:var(--text); background: rgba(175,184,193,0.2); padding: 2px 6px; border-radius: 4px; font-family: var(--mono);">release-assets.githubusercontent.com</code>)
+                    được xử lý <strong style="color:var(--text)">tự động</strong> — người dùng không cần làm gì thêm.
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-left">
+                Powered by <a href="https://workers.cloudflare.com" target="_blank">Cloudflare Pages</a>
+                &nbsp;·&nbsp;
+                <a href="https://bibica.net" target="_blank">bibica.net</a>
+            </div>
+            <div class="footer-note">gh.bibica.net</div>
+        </footer>
+
+    </div>
+
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.example-block').querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'copied!';
+                btn.style.color = 'var(--green)';
+                btn.style.borderColor = 'rgba(26,127,55,0.4)';
+                setTimeout(() => {
+                    btn.textContent = 'copy';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 1800);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
