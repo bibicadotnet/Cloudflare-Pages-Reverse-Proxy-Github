@@ -3,7 +3,7 @@ export default {
         const url = new URL(request.url);
         const pathname = url.pathname;
 
-        if (pathname === '/') {
+        if (pathname === '/' || pathname === '/github-proxy-smart-click.user.js') {
             return env.ASSETS.fetch(request);
         }
 
